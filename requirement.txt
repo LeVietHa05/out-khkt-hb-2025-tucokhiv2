@@ -1,0 +1,4 @@
+pyfingerprint==1.5
+pyserial==3.5
+websockets==12.0
+evdev==1.7.1
