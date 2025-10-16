@@ -17,7 +17,7 @@ def update_state(message):
 def verify_fingerprint():
     try:
         # Initialize UART connection
-        uart = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=1)
+        uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
         finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
 
         if finger.verify_password() != adafruit_fingerprint.OK:
@@ -26,7 +26,7 @@ def verify_fingerprint():
         print('Fingerprint sensor initialized successfully.')
 
         # Get template count
-        if finger.get_template_count() != adafruit_fingerprint.OK:
+        if finger.count_templates() != adafruit_fingerprint.OK:
             raise RuntimeError('Failed to get template count')
         template_count = finger.template_count
         print(f'Currently stored fingers: {template_count}')
@@ -87,7 +87,7 @@ def verify_fingerprint():
 def enroll_fingerprint():
     try:
         # Initialize UART connection
-        uart = serial.Serial("/dev/ttyAMA0", baudrate=57600, timeout=1)
+        uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
         finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
 
         if finger.verify_password() != adafruit_fingerprint.OK:
@@ -145,11 +145,20 @@ def enroll_fingerprint():
                 "time": timestamp
             })
             raise Exception('Fingers do not match')
+        
+        def find_empty_slot():
+            """Tìm một vị trí trống (ID) để lưu vân tay mới."""
+            for slot in range(1, finger.library_size + 1):  # library_size là số vị trí tối đa (127 hoặc 162)
+                # Kiểm tra xem vị trí có trống không
+                finger.read_templates()  # Đọc danh sách các template đã sử dụng
+                if slot not in finger.templates:  # Nếu slot không nằm trong danh sách đã sử dụng
+                    return slot
+            return None  # Trả về None nếu không còn vị trí trống
 
-        if finger.store_model(0) != adafruit_fingerprint.OK:  # Store at position 0, or find next available
+        positionNumber = find_empty_slot()
+        if finger.store_model(positionNumber) != adafruit_fingerprint.OK:  # Store at position 0, or find next available
             raise RuntimeError('Failed to store model')
 
-        positionNumber = 0  # Assuming stored at 0, adjust if needed
         update_state({
             "event": "register finger",
             "code": 0,
