@@ -61,14 +61,17 @@ if __name__ == '__main__':
     t2 = threading.Thread(target=fingerprint_loop)
     t3 = threading.Thread(target=qr_loop)
     t4 = threading.Thread(target=post_state)
+    t5 = threading.Thread(target=fetch_command)
 
     t1.start()
     t2.start()
     t3.start()
     t4.start()
+    t5.start()
 
     # Keep main thread alive
     t1.join()
     t2.join()
     t3.join()
     t4.join()
+    t5.join()
