@@ -2,19 +2,21 @@ import threading
 import time
 import queue
 import requests
-from ai_module import detect_tools, set_state_queue as set_ai_state
+#from ai_module import detect_tools, set_state_queue as set_ai_state
 from fingerprint_module import verify_fingerprint, enroll_fingerprint,  set_state_queue as set_fp_state
 from qr_module import read_qr, set_state_queue as set_qr_state
+
+serverUrl = 'http://172.16.30.167:3000'
 
 state_queue = queue.Queue()
 message_queue = queue.Queue()  # For results
 
-set_ai_state(state_queue)
+#set_ai_state(state_queue)
 set_fp_state(state_queue)
 set_qr_state(state_queue)
 
-def ai_loop():
-    detect_tools()
+# def ai_loop():
+#    detect_tools()
 
 def fingerprint_loop():
     verify_fingerprint()
@@ -28,7 +30,7 @@ def post_state():
     while True:
         try:
             state = state_queue.get(timeout=1)
-            requests.post('http://localhost:3000/state', json=state)
+            requests.post(serverUrl + '/state', json=state)
         except queue.Empty:
             pass
         except Exception as e:
@@ -38,16 +40,16 @@ def fetch_command():
     while True:
         try:
             # Gọi API để kiểm tra xem server có yêu cầu gì không
-            response = requests.get('http://localhost:3000/command', timeout=3)
+            response = requests.get(serverUrl + '/command', timeout=3)
             command = response.json()
 
             # Nếu server yêu cầu quét vân tay
-            if command.get("enroll_fingerprint"):
+            if (command['command'] == 'enroll_fingerprint'):
                 print("🆕 Enrolling new fingerprint...")
                 result = enroll_fingerprint()
 
                 # Gửi kết quả xác thực ngược lại server
-                requests.post('http://localhost:3000/erroll_result', json=result)
+                requests.post(serverUrl + '/erroll_result', json=result)
 
             time.sleep(1)  # 1 giây kiểm tra 1 lần
 
@@ -57,21 +59,21 @@ def fetch_command():
 
 
 if __name__ == '__main__':
-    t1 = threading.Thread(target=ai_loop)
+    # t1 = threading.Thread(target=ai_loop)
     t2 = threading.Thread(target=fingerprint_loop)
-    t3 = threading.Thread(target=qr_loop)
+    # t3 = threading.Thread(target=qr_loop)
     t4 = threading.Thread(target=post_state)
     t5 = threading.Thread(target=fetch_command)
 
-    t1.start()
+    # t1.start()
     t2.start()
-    t3.start()
+    # t3.start()
     t4.start()
     t5.start()
 
     # Keep main thread alive
-    t1.join()
+    # t1.join()
     t2.join()
-    t3.join()
+    # t3.join()
     t4.join()
     t5.join()
