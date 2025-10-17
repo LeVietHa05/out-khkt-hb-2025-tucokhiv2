@@ -30,7 +30,7 @@ def post_state():
     while True:
         try:
             state = state_queue.get(timeout=1)
-            requests.post(serverUrl + '/state', json=state)
+            requests.post(serverUrl + '/api/state', json=state)
         except queue.Empty:
             pass
         except Exception as e:
@@ -40,7 +40,7 @@ def fetch_command():
     while True:
         try:
             # Gọi API để kiểm tra xem server có yêu cầu gì không
-            response = requests.get(serverUrl + '/command', timeout=3)
+            response = requests.get(serverUrl + '/api/command', timeout=3)
             command = response.json()
 
             # Nếu server yêu cầu quét vân tay
@@ -49,7 +49,7 @@ def fetch_command():
                 result = enroll_fingerprint()
 
                 # Gửi kết quả xác thực ngược lại server
-                requests.post(serverUrl + '/erroll_result', json=result)
+                requests.post(serverUrl + '/api/erroll_result', json=result)
 
             time.sleep(1)  # 1 giây kiểm tra 1 lần
 
