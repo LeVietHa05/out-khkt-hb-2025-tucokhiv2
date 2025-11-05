@@ -46,7 +46,6 @@ def main_loop():
                 if command['command'] == 'enroll_fingerprint':
                     print("🆕 Enrolling new fingerprint...")
                     result = enroll_fingerprint()
-                    requests.post(serverUrl + '/api/erroll_result', json=result)
 
                 last_command_check = current_time
             except Exception as e:

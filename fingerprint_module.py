@@ -3,6 +3,9 @@ import serial
 import json
 import datetime
 import time
+import requests
+
+serverUrl = 'http://172.16.30.142:3000'
 
 state_queue = None
 
@@ -105,7 +108,7 @@ def enroll_fingerprint():
 
         # Check if finger is already enrolled
         if finger.finger_search() == adafruit_fingerprint.OK:
-            update_state({
+            requests.post(serverUrl + '/api/state', json={
                 "event": "register finger",
                 "code": 1,  # error code
                 "data": "finger already register",
@@ -114,7 +117,7 @@ def enroll_fingerprint():
             print(f'Template already exists at position {finger.finger_id}')
             return None
 
-        update_state({
+        requests.post(serverUrl + '/api/state', json={
             "event": "register finger",
             "code": 0,
             "data": "stage 1 done, remove finger",
@@ -123,7 +126,7 @@ def enroll_fingerprint():
         print('Remove finger...')
         time.sleep(2)
 
-        update_state({
+        requests.post(serverUrl + '/api/state', json={
             "event": "register finger",
             "code": 0,
             "data": "stage 2 done, place same finger",
@@ -138,7 +141,7 @@ def enroll_fingerprint():
             raise RuntimeError('Failed to convert second image')
 
         if finger.create_model() != adafruit_fingerprint.OK:
-            update_state({
+            requests.post(serverUrl + '/api/state', json={
                 "event": "register finger",
                 "code": 1,
                 "data": "finger do not match",
