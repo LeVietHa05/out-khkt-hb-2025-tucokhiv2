@@ -14,7 +14,8 @@ def update_state(message):
     if state_queue:
         state_queue.put(message)
 
-def verify_fingerprint():
+def init_fingerprint():
+    global finger
     try:
         # Initialize UART connection
         uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
@@ -30,45 +31,45 @@ def verify_fingerprint():
             raise RuntimeError('Failed to get template count')
         template_count = finger.template_count
         print(f'Currently stored fingers: {template_count}')
+        return True
+    except Exception as e:
+        print('Fingerprint sensor initialization failed!')
+        print('Exception message: ' + str(e))
+        return False
 
-        # Assuming templates are stored; map position to user_id (update as needed)
-        user_map = {1: 'user_01', 2: 'user_02'}  # Example mapping, positions start from 1
-
-        while True:
-            print('Waiting for finger...')
-            while finger.get_image() != adafruit_fingerprint.OK:
-                time.sleep(0.1)
+def check_fingerprint():
+    try:
+        if finger.get_image() == adafruit_fingerprint.OK:
             print('Image taken')
 
-            if finger.image_2_tz(1) != adafruit_fingerprint.OK:
+            if finger.image_2_tz(1) == adafruit_fingerprint.OK:
+                if finger.finger_search() == adafruit_fingerprint.OK:
+                    print(f'Match found at position {finger.finger_id}')
+                    timestamp = datetime.datetime.now().isoformat()
+                    update_state({
+                        "event": "finger",
+                        "code": 0,  # good code
+                        "data": finger.finger_id,
+                        "time": timestamp
+                    })
+                else:
+                    print('No match found')
+                    timestamp = datetime.datetime.now().isoformat()
+                    update_state({
+                        "event": "finger",
+                        "code": 1,  # error code
+                        "data": "not register",
+                        "time": timestamp
+                    })
+            else:
                 print('Failed to convert image')
-                continue
-
-            if finger.finger_search() != adafruit_fingerprint.OK:
-                print('No match found')
-                timestamp = datetime.datetime.now().isoformat()
                 update_state({
-                    "event": "finger",
-                    "code": 1,  # error code
-                    "data": "not register",
-                    "time": timestamp
-                })
-                time.sleep(1)
-                continue
-
-            print(f'Match found at position {finger.finger_id}')
-            timestamp = datetime.datetime.now().isoformat()
-            user_id = user_map.get(finger.finger_id, f'user_{finger.finger_id}')
-
-            update_state({
-                "event": "finger",
-                "code": 0,  # good code
-                "data": user_id,
-                "time": timestamp
-            })
-
-            time.sleep(1)  # Delay before next scan
-
+                        "event": "finger",
+                        "code": 0,  # good code
+                        "data": finger.finger_id,
+                        "time": timestamp
+                    })
+        # No sleep here, as it's polled
     except Exception as e:
         timestamp = datetime.datetime.now().isoformat()
         update_state({
@@ -79,7 +80,6 @@ def verify_fingerprint():
         })
         print('Operation failed!')
         print('Exception message: ' + str(e))
-        exit(1)
     
     
 

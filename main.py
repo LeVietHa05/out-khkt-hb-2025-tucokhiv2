@@ -1,79 +1,61 @@
-import threading
 import time
 import queue
 import requests
-#from ai_module import detect_tools, set_state_queue as set_ai_state
-from fingerprint_module import verify_fingerprint, enroll_fingerprint,  set_state_queue as set_fp_state
-from qr_module import read_qr, set_state_queue as set_qr_state
+from fingerprint_module import init_fingerprint, check_fingerprint, enroll_fingerprint, set_state_queue as set_fp_state
+from qr_module import init_qr, check_qr, set_state_queue as set_qr_state
 
-serverUrl = 'http://172.16.30.167:3000'
+serverUrl = 'http://172.16.30.142:3000'
 
 state_queue = queue.Queue()
-message_queue = queue.Queue()  # For results
 
-#set_ai_state(state_queue)
 set_fp_state(state_queue)
 set_qr_state(state_queue)
 
-# def ai_loop():
-#    detect_tools()
+# Initialize modules
+fp_initialized = init_fingerprint()
+qr_initialized = init_qr()
 
-def fingerprint_loop():
-    verify_fingerprint()
-
-def qr_loop():
-    read_qr()
-
-
-#update current machine state to server
-def post_state():
+def main_loop():
+    last_command_check = 0
     while True:
+        current_time = time.time()
+
+        # Check fingerprint if initialized
+        if fp_initialized:
+            check_fingerprint()
+
+        # Check QR if initialized
+        if qr_initialized:
+            check_qr()
+
+        # Post state if available
         try:
-            state = state_queue.get(timeout=1)
+            state = state_queue.get_nowait()
             requests.post(serverUrl + '/api/state', json=state)
         except queue.Empty:
             pass
         except Exception as e:
             print(f'Error posting state: {e}')
 
-def fetch_command():
-    while True:
-        try:
-            # Gọi API để kiểm tra xem server có yêu cầu gì không
-            response = requests.get(serverUrl + '/api/command', timeout=3)
-            command = response.json()
+        # Fetch command every 1 second
+        if current_time - last_command_check >= 1:
+            try:
+                response = requests.get(serverUrl + '/api/command', timeout=3)
+                command = response.json()
 
-            # Nếu server yêu cầu quét vân tay
-            if (command['command'] == 'enroll_fingerprint'):
-                print("🆕 Enrolling new fingerprint...")
-                result = enroll_fingerprint()
+                if command['command'] == 'enroll_fingerprint':
+                    print("🆕 Enrolling new fingerprint...")
+                    result = enroll_fingerprint()
+                    requests.post(serverUrl + '/api/erroll_result', json=result)
 
-                # Gửi kết quả xác thực ngược lại server
-                requests.post(serverUrl + '/api/erroll_result', json=result)
+                last_command_check = current_time
+            except Exception as e:
+                print(f"⚠️ Lỗi khi fetch command: {e}")
+                # On error, wait 10 seconds before retrying
+                last_command_check = current_time + 9  # +9 to make total 10 seconds
 
-            time.sleep(1)  # 1 giây kiểm tra 1 lần
-
-        except Exception as e:
-            print(f"⚠️ Lỗi khi fetch command: {e}")
-            time.sleep(10)
-
+        # Small sleep to prevent busy waiting
+        time.sleep(0.1)
 
 if __name__ == '__main__':
-    # t1 = threading.Thread(target=ai_loop)
-    t2 = threading.Thread(target=fingerprint_loop)
-    # t3 = threading.Thread(target=qr_loop)
-    t4 = threading.Thread(target=post_state)
-    t5 = threading.Thread(target=fetch_command)
-
-    # t1.start()
-    t2.start()
-    # t3.start()
-    t4.start()
-    t5.start()
-
-    # Keep main thread alive
-    # t1.join()
-    t2.join()
-    # t3.join()
-    t4.join()
-    t5.join()
+    main_loop()
