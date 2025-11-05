@@ -46,6 +46,7 @@ def main_loop():
                 if command['command'] == 'enroll_fingerprint':
                     print("🆕 Enrolling new fingerprint...")
                     result = enroll_fingerprint()
+                    time.sleep(5.0)
 
                 last_command_check = current_time
             except Exception as e:

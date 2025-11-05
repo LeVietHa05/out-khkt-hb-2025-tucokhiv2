@@ -64,6 +64,7 @@ def check_fingerprint():
                         "data": "not register",
                         "time": timestamp
                     })
+                    time.sleep(1.0)
             else:
                 print('Failed to convert image')
                 update_state({
@@ -72,6 +73,7 @@ def check_fingerprint():
                         "data": finger.finger_id,
                         "time": timestamp
                     })
+                time.sleep(1.0)
         # No sleep here, as it's polled
     except Exception as e:
         timestamp = datetime.datetime.now().isoformat()
@@ -83,9 +85,7 @@ def check_fingerprint():
         })
         print('Operation failed!')
         print('Exception message: ' + str(e))
-    
-    
-
+        time.sleep(5.0)
 
 def enroll_fingerprint():
     try:
