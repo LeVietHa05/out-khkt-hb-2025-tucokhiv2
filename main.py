@@ -25,8 +25,8 @@ def main_loop():
             check_fingerprint()
 
         # Check QR if initialized
-        if qr_initialized:
-            check_qr()
+        # if qr_initialized:
+            # check_qr()
 
         # Post state if available
         try:
@@ -46,7 +46,6 @@ def main_loop():
                 if command['command'] == 'enroll_fingerprint':
                     print("🆕 Enrolling new fingerprint...")
                     result = enroll_fingerprint()
-                    time.sleep(5.0)
 
                 last_command_check = current_time
             except Exception as e:
@@ -55,7 +54,7 @@ def main_loop():
                 last_command_check = current_time + 9  # +9 to make total 10 seconds
 
         # Small sleep to prevent busy waiting
-        time.sleep(0.1)
+        time.sleep(1.0)
 
 if __name__ == '__main__':
     main_loop()
