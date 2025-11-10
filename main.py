@@ -41,13 +41,13 @@ def main_loop():
         try:
             state = state_queue.get_nowait()
             requests.post(serverUrl + '/api/state', json=state)
-            if state.event == "register finger"  and state.code == 0:
+            if state['event'] == "register finger"  and state['code'] == 0:
                 time.sleep(1)
             
                 # ✅ Nếu là sự kiện vân tay
-            if state.event == "finger":
+            if state['event'] == "finger":
                 current_time = time.time()
-                if state.code == 0:
+                if state['code'] == 0:
                     print("✅ Fingerprint matched! Start sending images every 5s for 1 minute.")
                     send_interval = 5
                     send_until = current_time + 60
@@ -84,7 +84,7 @@ def main_loop():
                 try:
                     # ⚙️ Gọi hàm gửi ảnh (bạn tự định nghĩa, ví dụ send_image())
                     print("📸 Sending image to server...")
-                    # send_image()
+                    send_image()
                     last_image_time = current_time
                 except Exception as e:
                     print(f"Error sending image: {e}")
