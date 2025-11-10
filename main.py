@@ -29,7 +29,7 @@ def main_loop():
         # Check QR if initialized
         if qr_initialized:
             qr_data = check_qr()
-            if qr_data:
+            if qr_data is not None:
                 try:
                     requests.post(serverUrl + '/api/qr', json=qr_data)
                 except Exception as e:
