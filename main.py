@@ -31,7 +31,9 @@ def main_loop():
             qr_data = check_qr()
             if qr_data is not None:
                 try:
-                    requests.post(serverUrl + '/api/qr', json=qr_data)
+                    print(qr_data)
+                    res= requests.post(serverUrl + '/api/qr', json=qr_data)
+                    print(res)
                 except Exception as e:
                     print(f'Error posting QR data: {e}')
 
@@ -82,7 +84,7 @@ def main_loop():
                 try:
                     # ⚙️ Gọi hàm gửi ảnh (bạn tự định nghĩa, ví dụ send_image())
                     print("📸 Sending image to server...")
-                    send_image()
+                    # send_image()
                     last_image_time = current_time
                 except Exception as e:
                     print(f"Error sending image: {e}")

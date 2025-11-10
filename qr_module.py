@@ -17,6 +17,7 @@ def init_qr():
         return False
 
 def check_qr():
+    global barcode
     try:
         event = device.read_one()
         if event and event.type == ecodes.EV_KEY:
