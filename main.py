@@ -2,7 +2,7 @@ import time
 import queue
 import requests
 from fingerprint_module import init_fingerprint, check_fingerprint, enroll_fingerprint, set_state_queue as set_fp_state
-from qr_module import init_qr, check_qr, set_state_queue as set_qr_state
+from qr_module import init_qr, check_qr
 from newai_module import send_image
 
 serverUrl = 'http://172.16.30.124:3000'
@@ -10,8 +10,6 @@ serverUrl = 'http://172.16.30.124:3000'
 state_queue = queue.Queue()
 
 set_fp_state(state_queue)
-set_qr_state(state_queue)
-
 # Initialize modules
 fp_initialized = init_fingerprint()
 qr_initialized = init_qr()
