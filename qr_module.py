@@ -2,22 +2,12 @@ from evdev import InputDevice, categorize, ecodes
 import json
 import datetime
 
-state_queue = None
-
-def set_state_queue(queue):
-    global state_queue
-    state_queue = queue
-
-def update_state(message):
-    if state_queue:
-        state_queue.put(message)
-
 def init_qr():
     global device, barcode
     try:
         # Note: Adjust '/dev/input/event0' to the correct event device for the GM65 scanner.
         # You can list devices with: python3 -c "from evdev import list_devices; print(list_devices())"
-        device = InputDevice('/dev/input/event0')
+        device = InputDevice('/dev/input/event10') #update event
         barcode = ""
         print('QR scanner initialized successfully.')
         return True
@@ -35,16 +25,18 @@ def check_qr():
                 if data.keycode == 'KEY_ENTER':
                     if barcode:
                         timestamp = datetime.datetime.now().isoformat()
-                        
-                        update_state({
+                        data = {
                             "event" : "qr",
                             "code" : 0,
                             "data": barcode,
                             "time": timestamp
-                        })
+                        }
                         barcode = ""
+                        return data
                 else:
                     key = data.keycode.replace('KEY_', '')
                     barcode += key.lower()
+        return None
     except Exception as e:
         print('Error checking QR: ' + str(e))
+        return None

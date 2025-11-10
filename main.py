@@ -5,7 +5,7 @@ from fingerprint_module import init_fingerprint, check_fingerprint, enroll_finge
 from qr_module import init_qr, check_qr, set_state_queue as set_qr_state
 from newai_module import send_image
 
-serverUrl = 'http://172.16.30.142:3000'
+serverUrl = 'http://172.16.30.124:3000'
 
 state_queue = queue.Queue()
 
@@ -30,8 +30,13 @@ def main_loop():
             check_fingerprint()
 
         # Check QR if initialized
-        # if qr_initialized:
-            # check_qr()
+        if qr_initialized:
+            qr_data = check_qr()
+            if qr_data:
+                try:
+                    requests.post(serverUrl + '/api/qr', json=qr_data)
+                except Exception as e:
+                    print(f'Error posting QR data: {e}')
 
         # Post state if available
         try:

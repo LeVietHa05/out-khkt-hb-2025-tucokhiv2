@@ -3,7 +3,7 @@ import time
 import subprocess
 import requests
 
-SERVER_URL = "http://172.16.30.142:3000/api/image"
+SERVER_URL = "http://172.16.30.124:3000/api/image"
 
 def send_image():
     """
