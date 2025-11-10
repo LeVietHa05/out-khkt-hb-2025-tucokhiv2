@@ -9,10 +9,6 @@ serverUrl = 'http://172.16.30.124:3000'
 
 state_queue = queue.Queue()
 
-last_image_time = 0
-send_interval = 600  # mặc định 10 phút
-send_until = 0
-
 set_fp_state(state_queue)
 set_qr_state(state_queue)
 
@@ -22,6 +18,9 @@ qr_initialized = init_qr()
 
 def main_loop():
     last_command_check = 0
+    last_image_time = 0
+    send_interval = 600  # mặc định 10 phút
+    send_until = 0
     while True:
         current_time = time.time()
 
