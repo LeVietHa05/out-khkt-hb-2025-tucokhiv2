@@ -3,7 +3,7 @@ import time
 import subprocess
 import requests
 
-SERVER_URL = "http://172.16.30.124:3000/api/image"
+from config import serverUrl ,imageAPI
 
 def send_image():
     """
@@ -22,7 +22,7 @@ def send_image():
         # Đọc ảnh và gửi lên server
         with open(temp_path, "rb") as f:
             files = {"file": ("capture.jpg", f, "image/jpeg")}
-            response = requests.post(SERVER_URL, files=files, timeout=10)
+            response = requests.post(serverUrl + imageAPI, files=files, timeout=10)
 
         if response.status_code == 200:
             print("✅ Ảnh đã gửi thành công!")

@@ -4,8 +4,7 @@ import requests
 from fingerprint_module import init_fingerprint, check_fingerprint, enroll_fingerprint, set_state_queue as set_fp_state
 from qr_module import init_qr, check_qr
 from newai_module import send_image
-
-serverUrl = 'http://172.16.30.124:3000'
+from config import serverUrl, qrAPI, stateAPI, commandAPI
 
 state_queue = queue.Queue()
 
@@ -32,7 +31,7 @@ def main_loop():
             if qr_data is not None:
                 try:
                     print(qr_data)
-                    res= requests.post(serverUrl + '/api/qr', json=qr_data)
+                    res= requests.post(serverUrl + qrAPI, json=qr_data)
                     print(res)
                 except Exception as e:
                     print(f'Error posting QR data: {e}')
@@ -40,7 +39,7 @@ def main_loop():
         # Post state if available
         try:
             state = state_queue.get_nowait()
-            requests.post(serverUrl + '/api/state', json=state)
+            requests.post(serverUrl + stateAPI, json=state)
             if state['event'] == "register finger"  and state['code'] == 0:
                 time.sleep(1)
             
@@ -64,7 +63,7 @@ def main_loop():
         # Fetch command every 2 second
         if current_time - last_command_check >= 2:
             try:
-                response = requests.get(serverUrl + '/api/command', timeout=3)
+                response = requests.get(serverUrl + commandAPI, timeout=3)
                 command = response.json()
 
                 if command['command'] == 'enroll_fingerprint':

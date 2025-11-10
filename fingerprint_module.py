@@ -5,7 +5,7 @@ import datetime
 import time
 import requests
 
-from main import serverUrl
+from config import serverUrl, fingerPath, stateAPI
 
 state_queue = None
 
@@ -21,7 +21,7 @@ def init_fingerprint():
     global finger
     try:
         # Initialize UART connection
-        uart = serial.Serial("/dev/ttyS0", baudrate=57600, timeout=1)
+        uart = serial.Serial(fingerPath, baudrate=57600, timeout=1)
         finger = adafruit_fingerprint.Adafruit_Fingerprint(uart)
 
         if finger.verify_password() != adafruit_fingerprint.OK:
@@ -106,7 +106,7 @@ def enroll_fingerprint():
 
         # Check if finger is already enrolled
         if finger.finger_search() == adafruit_fingerprint.OK:
-            requests.post(serverUrl + '/api/state', json={
+            requests.post(serverUrl + stateAPI, json={
                 "event": "register finger",
                 "code": 1,  # error code
                 "data": "finger already register",
@@ -115,7 +115,7 @@ def enroll_fingerprint():
             print(f'Template already exists at position {finger.finger_id}')
             return None
 
-        requests.post(serverUrl + '/api/state', json={
+        requests.post(serverUrl + stateAPI, json={
             "event": "register finger",
             "code": 0,
             "data": "stage 1 done, remove finger",
@@ -124,7 +124,7 @@ def enroll_fingerprint():
         print('Remove finger...')
         time.sleep(2)
 
-        requests.post(serverUrl + '/api/state', json={
+        requests.post(serverUrl + stateAPI, json={
             "event": "register finger",
             "code": 0,
             "data": "stage 2 done, place same finger",
@@ -139,7 +139,7 @@ def enroll_fingerprint():
             raise RuntimeError('Failed to convert second image')
 
         if finger.create_model() != adafruit_fingerprint.OK:
-            requests.post(serverUrl + '/api/state', json={
+            requests.post(serverUrl + stateAPI, json={
                 "event": "register finger",
                 "code": 1,
                 "data": "finger do not match",
