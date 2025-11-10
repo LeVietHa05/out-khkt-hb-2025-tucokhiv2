@@ -1,6 +1,7 @@
 from evdev import InputDevice, categorize, ecodes
 import json
 import datetime
+import select
 
 def init_qr():
     global device, barcode
@@ -16,28 +17,32 @@ def init_qr():
         print('Exception message: ' + str(e))
         return False
 
-def check_qr():
+def check_qr(timeout=1.0):
     global barcode
     try:
-        event = device.read_one()
-        if event and event.type == ecodes.EV_KEY:
-            data = categorize(event)
-            if data.keystate == 1:  # Key down
-                if data.keycode == 'KEY_ENTER':
-                    if barcode:
-                        timestamp = datetime.datetime.now().isoformat()
-                        data = {
-                            "event" : "qr",
-                            "code" : 0,
-                            "data": barcode,
-                            "time": timestamp
-                        }
-                        barcode = ""
-                        return data
-                else:
+        # Dùng select để chờ event, timeout để không treo
+        r, _, _ = select.select([device], [], [], timeout)
+        if not r:
+            return None  # không có event nào
+
+        for event in device.read():
+            if event.type == ecodes.EV_KEY:
+                data = categorize(event)
+                if data.keystate == 1:  # key down
                     key = data.keycode.replace('KEY_', '')
-                    barcode += key.lower()
+                    if key == 'ENTER':
+                        if barcode:
+                            result = {
+                                "event": "qr",
+                                "code": 0,
+                                "data": barcode,
+                                "time": datetime.datetime.now().isoformat()
+                            }
+                            barcode = ""
+                            return result
+                    else:
+                        barcode += key.lower()
         return None
     except Exception as e:
-        print('Error checking QR: ' + str(e))
+        print(f"Error checking QR: {e}")
         return None
