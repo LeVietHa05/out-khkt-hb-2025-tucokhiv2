@@ -5,7 +5,7 @@ import datetime
 import time
 import requests
 
-serverUrl = 'http://172.16.30.142:3000'
+from main import serverUrl
 
 state_queue = None
 
