@@ -61,25 +61,23 @@ def check_fingerprint():
                     update_state({
                         "event": "finger",
                         "code": 1,  # error code
-                        "data": "not register",
+                        "data": "failed",
                         "time": timestamp
                     })
-                    time.sleep(1.0)
             else:
                 print('Failed to convert image')
                 update_state({
                         "event": "finger",
-                        "code": 0,  # good code
-                        "data": finger.finger_id,
+                        "code": 2,  # good code
+                        "data": "failed",
                         "time": timestamp
                     })
-                time.sleep(1.0)
         # No sleep here, as it's polled
     except Exception as e:
         timestamp = datetime.datetime.now().isoformat()
         update_state({
             "event": "finger",
-            "code": 1,  # error code
+            "code": 3,  # error code
             "data": "something gone wrong",
             "time": timestamp
         })
