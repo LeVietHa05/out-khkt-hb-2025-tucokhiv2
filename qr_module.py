@@ -20,17 +20,22 @@ def init_qr():
 def check_qr(timeout=1.0):
     global barcode
     try:
-        # Dùng select để chờ event, timeout để không treo
         r, _, _ = select.select([device], [], [], timeout)
         if not r:
-            return None  # không có event nào
+            return None
 
         for event in device.read():
             if event.type == ecodes.EV_KEY:
                 data = categorize(event)
                 if data.keystate == 1:  # key down
                     key = data.keycode.replace('KEY_', '')
-                    if key == 'ENTER':
+
+                    # 🔹 Chỉ nhận số & chữ cái
+                    if key.isdigit():
+                        barcode += key
+                    elif len(key) == 1 and key.isalpha():
+                        barcode += key.lower()
+                    elif key == 'ENTER':
                         if barcode:
                             result = {
                                 "event": "qr",
@@ -41,7 +46,8 @@ def check_qr(timeout=1.0):
                             barcode = ""
                             return result
                     else:
-                        barcode += key.lower()
+                        # Bỏ qua các phím hệ thống như CAPSLOCK, SHIFT, ...
+                        pass
         return None
     except Exception as e:
         print(f"Error checking QR: {e}")
