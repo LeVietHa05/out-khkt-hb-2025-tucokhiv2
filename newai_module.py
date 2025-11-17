@@ -13,7 +13,7 @@ def send_image():
         # Dùng rpicam-still để chụp ảnh tạm
         temp_path = "/tmp/capture.jpg"
         subprocess.run(
-            ["rpicam-still", "-n", "-t", "500", "-o", temp_path, "--width", "1280", "--height", "720"],
+            ["rpicam-still", "-n", "-t", "500", "-o", temp_path, "--width", "3280", "--height", "2464"],
             check=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL

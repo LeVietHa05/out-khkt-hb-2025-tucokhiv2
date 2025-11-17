@@ -1,4 +1,4 @@
-from evdev import InputDevice, categorize, ecodes
+from evdev import InputDevice, categorize, ecodes, list_devices
 import json
 import datetime
 import select
@@ -7,7 +7,7 @@ from config import qrpath
 
 # run this if needed
 def find_gm65_device():
-    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    devices = [InputDevice(path) for path in list_devices()]
     for device in devices:
         if "USBKEY CHIP" in device.name.upper():
             print(f"✅ Found GM65 at {device.path} ({device.name})")
@@ -18,7 +18,7 @@ def init_qr():
     global device, barcode
     try:
         # if not qrpath:
-        #     qrpath = find_gm65_device()
+        qrpath = find_gm65_device()
         # Note: Adjust '/dev/input/event0' to the correct event device for the GM65 scanner.
         # You can list devices with: python3 -c "from evdev import list_devices; print(list_devices())"
         device = InputDevice(qrpath) #update event
