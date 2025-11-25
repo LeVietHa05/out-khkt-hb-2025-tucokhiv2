@@ -1,5 +1,5 @@
 
-serverUrl = 'http://172.16.30.124:3000'
+serverUrl = 'https://smartcabinnet.xyz'
 imageAPI = '/api/image'
 qrAPI = '/api/qr'
 stateAPI = '/api/state'
